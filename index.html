@@ -373,6 +373,7 @@
         switch (message.type) {
           case 'connection':
             connectionId = message.connectionId;
+            console.log("Connection established with ID:", connectionId);
             break;
             
           case 'register':
@@ -380,6 +381,20 @@
             playerName = playerNameInput.value.trim();
             logMessage(`Kayıt başarılı, Oyuncu ID: ${playerId}`);
             console.log("Player registered with ID:", playerId);
+            // WebSocket nesnesine oyuncu bilgilerini ekleyelim
+            ws.playerId = playerId;
+            ws.playerName = playerName;
+            break;
+            
+          case 'registered':
+            // Eski format için geriye dönük uyumluluk
+            playerId = message.playerId;
+            playerName = playerNameInput.value.trim();
+            logMessage(`Kayıt başarılı, Oyuncu ID: ${playerId}`);
+            console.log("Player registered with ID (old format):", playerId);
+            // WebSocket nesnesine oyuncu bilgilerini ekleyelim
+            ws.playerId = playerId;
+            ws.playerName = playerName;
             break;
             
           case 'gameCreated':
@@ -501,25 +516,43 @@
       
       if (!playerId) {
         logMessage("Oyuncu ID bulunamadı. Lütfen bağlantınızı kontrol edin.", "error");
+        console.error("Oyuncu ID bulunamadı. playerId değeri:", playerId);
         return;
       }
       
+      // İşlem sırasında butonu devre dışı bırak
+      createGameBtn.disabled = true;
+      
       console.log("Creating game with player ID:", playerId);
+      console.log("Player name:", playerName);
       
-      const message = {
-        type: 'createGame',
-        playerId: playerId,
-        playerName: playerName,
-        data: {
-          gameSettings: {
-            minPlayers: 2,
-            maxPlayers: 10,
-            totalTurns: 10
+      try {
+        const message = {
+          type: 'createGame',
+          playerId: playerId,
+          playerName: playerName,
+          data: {
+            gameSettings: {
+              minPlayers: 2,
+              maxPlayers: 10,
+              totalTurns: 10
+            }
           }
-        }
-      };
+        };
+        
+        console.log("Sending message to server:", message);
+        sendToServer(message);
+      } catch (error) {
+        console.error("Oyun oluşturma hatası:", error);
+        logMessage(`Oyun oluşturma hatası: ${error.message}`, "error");
+        // Hata durumunda butonu tekrar aktif et
+        createGameBtn.disabled = false;
+      }
       
-      sendToServer(message);
+      // 3 saniye sonra butonu tekrar aktif et (işlem tamamlansa da tamamlanmasa da)
+      setTimeout(() => {
+        createGameBtn.disabled = false;
+      }, 3000);
     }
     
     // Mevcut oyuna katıl
@@ -690,10 +723,24 @@
         return;
       }
       
-      const messageStr = JSON.stringify(message);
-      ws.send(messageStr);
-      
-      logMessage(`Gönderildi: ${messageStr}`, "sent");
+      try {
+        // Mesajın geçerli bir nesne olduğundan emin ol
+        if (typeof message !== 'object' || message === null) {
+          logMessage("Geçersiz mesaj formatı: Nesne değil", "error");
+          return;
+        }
+        
+        // Mesajı JSON formatına dönüştür
+        const messageStr = JSON.stringify(message);
+        
+        // Mesajı gönder
+        ws.send(messageStr);
+        
+        // Log mesajı
+        logMessage(`Gönderildi: ${messageStr}`, "sent");
+      } catch (error) {
+        logMessage(`Mesaj gönderme hatası: ${error.message}`, "error");
+      }
     }
     
     // Mesaj geçmişine mesaj ekle
