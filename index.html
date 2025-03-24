@@ -375,6 +375,12 @@
             connectionId = message.connectionId;
             break;
             
+          case 'register':
+            playerId = message.playerId;
+            playerName = playerNameInput.value.trim();
+            logMessage(`Kayıt başarılı, Oyuncu ID: ${playerId}`);
+            break;
+            
           case 'gameCreated':
             currentGameId = message.gameId;
             isGameOwner = true;
@@ -494,8 +500,6 @@
       
       const message = {
         type: 'createGame',
-        playerId: playerId,
-        playerName: playerName,
         data: {
           gameSettings: {
             minPlayers: 2,
@@ -524,9 +528,7 @@
       
       const message = {
         type: 'joinGame',
-        gameId: gameId,
-        playerId: playerId,
-        playerName: playerName
+        gameId: gameId
       };
       
       sendToServer(message);
@@ -541,8 +543,7 @@
       
       const message = {
         type: 'startGame',
-        gameId: currentGameId,
-        playerId: playerId
+        gameId: currentGameId
       };
       
       sendToServer(message);
