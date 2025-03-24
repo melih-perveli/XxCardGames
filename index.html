@@ -379,6 +379,7 @@
             playerId = message.playerId;
             playerName = playerNameInput.value.trim();
             logMessage(`Kayıt başarılı, Oyuncu ID: ${playerId}`);
+            console.log("Player registered with ID:", playerId);
             break;
             
           case 'gameCreated':
@@ -498,8 +499,17 @@
         return;
       }
       
+      if (!playerId) {
+        logMessage("Oyuncu ID bulunamadı. Lütfen bağlantınızı kontrol edin.", "error");
+        return;
+      }
+      
+      console.log("Creating game with player ID:", playerId);
+      
       const message = {
         type: 'createGame',
+        playerId: playerId,
+        playerName: playerName,
         data: {
           gameSettings: {
             minPlayers: 2,
@@ -526,9 +536,16 @@
         return;
       }
       
+      if (!playerId) {
+        logMessage("Oyuncu ID bulunamadı. Lütfen bağlantınızı kontrol edin.", "error");
+        return;
+      }
+      
       const message = {
         type: 'joinGame',
-        gameId: gameId
+        gameId: gameId,
+        playerId: playerId,
+        playerName: playerName
       };
       
       sendToServer(message);
@@ -541,9 +558,16 @@
         return;
       }
       
+      if (!playerId) {
+        logMessage("Oyuncu ID bulunamadı. Lütfen bağlantınızı kontrol edin.", "error");
+        return;
+      }
+      
       const message = {
         type: 'startGame',
-        gameId: currentGameId
+        gameId: currentGameId,
+        playerId: playerId,
+        playerName: playerName
       };
       
       sendToServer(message);
