@@ -137,15 +137,87 @@
         </div>
         
         <div id="rally-organization" style="display:none;">
-          <h4>Miting Düzenleme</h4>
-          <div id="policy-cards" class="cards"></div>
-          <button id="organize-rally-btn" disabled>Miting Düzenle</button>
+          <h3>Miting Düzenleme</h3>
+          <div id="promotion-cards-section">
+            <h4>Promosyon Kartları</h4>
+            <p>Mitinginize katılımı artırmak için promosyon kartları seçin:</p>
+            <div id="promotion-cards-container" class="cards"></div>
+            <p id="promotion-cost-info"></p>
+            <p><small>Not: Promosyon kartları seçim bütçenizden harcanır. Mevcut bütçe: <span id="election-budget">100</span></small></p>
+          </div>
+          <div id="policy-cards-section">
+            <h4>Politika Kartları</h4>
+            <p>Mitingde savunacağınız politikaları seçin:</p>
+            <div id="policy-cards-container" class="cards"></div>
+          </div>
+          <button id="organize-rally-btn">Miting Düzenle</button>
+          <button id="rally-ready-btn" data-phase="rallyOrganization">Hazırım</button>
         </div>
         
         <div id="election-bus" style="display:none;">
           <h4>Seçim Otobüsü</h4>
-          <input type="text" id="chat-message" placeholder="Mesajınız...">
-          <button id="send-message-btn">Gönder</button>
+          <div class="bus-actions">
+            <div id="chat-section">
+              <h5>Otobüs Sohbeti</h5>
+              <input type="text" id="chat-message" placeholder="Mesajınız...">
+              <button id="send-message-btn">Gönder</button>
+              <div id="chat-log" class="log-container"></div>
+            </div>
+            
+            <div id="media-news-section">
+              <h5>Medya Haberleri</h5>
+              <p>Medyada haber yaptırarak kamuoyunu etkileyebilirsiniz. Her haber 10 birim seçim bütçesi harcar.</p>
+              <p><small>Mevcut bütçe: <span id="election-budget-news">100</span></small></p>
+              
+              <div id="news-type-selection">
+                <button id="policy-news-btn" class="news-btn">Politika Haberi</button>
+                <button id="polemic-news-btn" class="news-btn">Polemik Haberi</button>
+              </div>
+              
+              <div id="policy-news-options" style="display:none;">
+                <h6>Politika Haberi Seçenekleri</h6>
+                <p>Ulusal bir politika haberi yaptırarak kendinizi siyasi matrisin hangi alanına konumlandırmak istediğinizi seçin:</p>
+                <div class="matrix-options">
+                  <button class="matrix-option" data-x="1" data-y="1">Muhafazakar Sağ</button>
+                  <button class="matrix-option" data-x="1" data-y="-1">Liberal Sağ</button>
+                  <button class="matrix-option" data-x="-1" data-y="1">Muhafazakar Sol</button>
+                  <button class="matrix-option" data-x="-1" data-y="-1">Liberal Sol</button>
+                </div>
+                <button id="confirm-policy-news" class="confirm-btn">Haberi Yaptır</button>
+              </div>
+              
+              <div id="polemic-news-options" style="display:none;">
+                <h6>Polemik Haberi Seçenekleri</h6>
+                <p>Rakiplerinizden biriyle polemik yaratarak onun konumunu değiştirebilirsiniz:</p>
+                <select id="opponent-select">
+                  <option value="">Rakip seçin...</option>
+                </select>
+                
+                <div id="accusation-options" style="display:none;">
+                  <p>Rakibinizi ne ile itham etmek istiyorsunuz?</p>
+                  <select id="accusation-type">
+                    <option value="">İtham türü seçin...</option>
+                    <option value="corruption">Yolsuzluk</option>
+                    <option value="incompetence">Yetersizlik</option>
+                    <option value="extremism">Aşırılık</option>
+                    <option value="dishonesty">Dürüst olmamak</option>
+                  </select>
+                  
+                  <div id="matrix-movement-options" style="display:none;">
+                    <p>Rakibinizi siyasi matrisin hangi alanına itmek istiyorsunuz?</p>
+                    <div class="matrix-options">
+                      <button class="matrix-option" data-x="1" data-y="1">Muhafazakar Sağ</button>
+                      <button class="matrix-option" data-x="1" data-y="-1">Liberal Sağ</button>
+                      <button class="matrix-option" data-x="-1" data-y="1">Muhafazakar Sol</button>
+                      <button class="matrix-option" data-x="-1" data-y="-1">Liberal Sol</button>
+                    </div>
+                  </div>
+                  
+                  <button id="confirm-polemic-news" class="confirm-btn">Haberi Yaptır</button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         
         <div id="media-interaction" style="display:none;">
@@ -164,6 +236,11 @@
         
         <div id="player-controls">
           <button id="player-ready-btn" style="display:none;">Hazırım</button>
+        </div>
+        
+        <div id="policyCardSection" style="display:none;">
+          <h4>Politika Kartları</h4>
+          <div id="policyCardsContainer" class="cards"></div>
         </div>
       </div>
     </div>
@@ -218,6 +295,10 @@
     const messageLog = document.getElementById('message-log');
     const gameStatus = document.getElementById('game-status');
     const updateUrlBtn = document.getElementById('update-url-btn');
+    const policyCardSection = document.getElementById('policyCardSection');
+    const policyCardsContainerElement = document.getElementById('policyCardsContainer');
+    const promotionCardsContainer = document.getElementById('promotion-cards-container');
+    const policyCardsContainerRally = document.getElementById('policy-cards-container');
     
     // Sayfa yüklendiğinde
     document.addEventListener('DOMContentLoaded', () => {
@@ -267,6 +348,7 @@
       playerReadyBtn.addEventListener('click', setPlayerReady);
       document.getElementById('send-message-btn').addEventListener('click', sendChatMessage);
       document.getElementById('media-action-btn').addEventListener('click', performMediaAction);
+      document.getElementById('rally-ready-btn').addEventListener('click', setPlayerReady);
     });
     
     // WebSocket bağlantısını kur
@@ -346,6 +428,7 @@
       rallyOrganization.style.display = 'none';
       electionBus.style.display = 'none';
       mediaInteraction.style.display = 'none';
+      policyCardSection.style.display = 'none';
       
       playerReadyBtn.style.display = 'none';
       
@@ -353,6 +436,9 @@
       
       cityCardsContainer.innerHTML = '';
       policyCardsContainer.innerHTML = '';
+      policyCardsContainerElement.innerHTML = '';
+      promotionCardsContainer.innerHTML = '';
+      policyCardsContainerRally.innerHTML = '';
       
       currentGameId = null;
       isGameOwner = false;
@@ -423,6 +509,12 @@
           case 'gameStarted':
             logMessage('Oyun başladı!');
             gameStatus.textContent = `Oyun başladı! Tur: ${message.gameState.turn}`;
+            
+            // Oyun başladığında seçim bütçesini göster
+            if (message.gameState.players && message.gameState.players[playerId]) {
+              const electionBudget = message.gameState.players[playerId].electionBudget || 100;
+              document.getElementById('election-budget').textContent = electionBudget;
+            }
             break;
             
           case 'turnStarted':
@@ -432,6 +524,11 @@
             
             logMessage(`Tur ${message.turn} başladı`);
             gameStatus.textContent = `Tur ${message.turn} - Kart dağıtımı aşaması`;
+            
+            // Seçim bütçesini güncelle
+            if (message.playerState && message.playerState.electionBudget) {
+              document.getElementById('election-budget').textContent = message.playerState.electionBudget;
+            }
             
             actionPanel.style.display = 'block';
             citySelection.style.display = 'block';
@@ -459,7 +556,24 @@
             break;
             
           case 'rallyResult':
-            logMessage(`Miting sonucu: ${message.message}`);
+            // Miting sonucunu daha detaylı göster
+            let resultMessage = `Miting sonucu: ${message.message}`;
+            
+            // Promosyon kartı maliyeti ve etkinliği varsa göster
+            if (message.result && message.result.totalPromotionCost) {
+              resultMessage += `<br>Harcanan seçim bütçesi: ${message.result.totalPromotionCost}`;
+            }
+            
+            if (message.result && message.result.promotionEffectiveness) {
+              resultMessage += `<br>Promosyon etkinliği: ${(message.result.promotionEffectiveness * 100).toFixed(1)}%`;
+            }
+            
+            // Seçim bütçesini güncelle
+            if (message.playerState && message.playerState.electionBudget) {
+              document.getElementById('election-budget').textContent = message.playerState.electionBudget;
+            }
+            
+            logMessage(resultMessage);
             rallyOrganization.style.display = 'none';
             
             // Hazır butonunu göster
@@ -506,6 +620,241 @@
         logMessage(`Mesaj işleme hatası: ${error.message}`, "error");
       }
     }
+    
+    // Politika kartlarını görüntüle (miting düzenleme için)
+    function displayPolicyCardsForRally(cards) {
+      policyCardsContainerRally.innerHTML = '';
+      
+      cards.forEach(card => {
+        const cardElement = document.createElement('div');
+        cardElement.className = 'card';
+        cardElement.dataset.id = card.id;
+        cardElement.innerHTML = `
+          <h4>${card.title}</h4>
+          <p>${card.description}</p>
+        `;
+        
+        cardElement.addEventListener('click', () => {
+          // Kartın seçim durumunu değiştir
+          cardElement.classList.toggle('selected');
+        });
+        
+        policyCardsContainerRally.appendChild(cardElement);
+      });
+    }
+    
+    // Aşamaya göre UI'ı güncelle
+    function updateUIForPhase(phase) {
+      // Tüm aksiyon panellerini gizle
+      citySelection.style.display = 'none';
+      rallyOrganization.style.display = 'none';
+      electionBus.style.display = 'none';
+      mediaInteraction.style.display = 'none';
+      policyCardSection.style.display = 'none';
+      playerReadyBtn.style.display = 'none';
+      
+      // Geçerli aşamaya göre paneli göster
+      switch (phase) {
+        case 'citySelection':
+          citySelection.style.display = 'block';
+          displayCityCards(gameState.cards.city || []);
+          break;
+          
+        case 'rallyOrganization':
+          rallyOrganization.style.display = 'block';
+          displayPromotionCards(gameState.cards.promotion || []);
+          displayPolicyCardsForRally(gameState.cards.policy || []);
+          break;
+          
+        case 'politicalSpeech':
+          // Politik konuşma aşaması için UI göster
+          policyCardSection.style.display = 'block';
+          displayPolicyCardsForSpeech(gameState.cards.policy || []);
+          // Hazır butonunu göster
+          playerReadyBtn.style.display = 'block';
+          playerReadyBtn.dataset.phase = 'politicalSpeech';
+          break;
+          
+        case 'electionBus':
+          electionBus.style.display = 'block';
+          // Seçim bütçesini güncelle
+          document.getElementById('election-budget-news').textContent = document.getElementById('election-budget').textContent;
+          // Rakip listesini güncelle
+          updateOpponentList();
+          break;
+          
+        case 'mediaInteraction':
+          mediaInteraction.style.display = 'block';
+          break;
+          
+        case 'polling':
+          // Anket sonuçları için özel bir panel yok, sadece hazır butonunu göster
+          playerReadyBtn.style.display = 'block';
+          playerReadyBtn.dataset.phase = 'polling';
+          break;
+      }
+    }
+    
+    // Rakip listesini güncelle
+    function updateOpponentList() {
+      const opponentSelect = document.getElementById('opponent-select');
+      opponentSelect.innerHTML = '<option value="">Rakip seçin...</option>';
+      
+      // Oyundaki diğer oyuncuları al
+      const players = gameState.players || [];
+      
+      // Kendisi hariç diğer oyuncuları listeye ekle
+      Object.keys(players).forEach(pid => {
+        if (pid !== playerId) {
+          const option = document.createElement('option');
+          option.value = pid;
+          option.textContent = players[pid].name;
+          opponentSelect.appendChild(option);
+        }
+      });
+    }
+    
+    // Medya haber işlemleri için olay dinleyicileri
+    document.addEventListener('DOMContentLoaded', () => {
+      // Politika haberi butonu
+      document.getElementById('policy-news-btn').addEventListener('click', () => {
+        document.getElementById('policy-news-options').style.display = 'block';
+        document.getElementById('polemic-news-options').style.display = 'none';
+      });
+      
+      // Polemik haberi butonu
+      document.getElementById('polemic-news-btn').addEventListener('click', () => {
+        document.getElementById('polemic-news-options').style.display = 'block';
+        document.getElementById('policy-news-options').style.display = 'none';
+      });
+      
+      // Rakip seçimi değiştiğinde
+      document.getElementById('opponent-select').addEventListener('change', (e) => {
+        if (e.target.value) {
+          document.getElementById('accusation-options').style.display = 'block';
+        } else {
+          document.getElementById('accusation-options').style.display = 'none';
+        }
+      });
+      
+      // İtham türü seçildiğinde
+      document.getElementById('accusation-type').addEventListener('change', (e) => {
+        if (e.target.value) {
+          document.getElementById('matrix-movement-options').style.display = 'block';
+        } else {
+          document.getElementById('matrix-movement-options').style.display = 'none';
+        }
+      });
+      
+      // Politika haberi onaylama
+      document.getElementById('confirm-policy-news').addEventListener('click', () => {
+        const selectedMatrix = document.querySelector('#policy-news-options .matrix-option.selected');
+        
+        if (!selectedMatrix) {
+          alert('Lütfen bir matris pozisyonu seçin!');
+          return;
+        }
+        
+        // Bütçe kontrolü
+        const currentBudget = parseInt(document.getElementById('election-budget-news').textContent) || 0;
+        if (currentBudget < 10) {
+          alert('Yeterli seçim bütçeniz yok! Haber yaptırmak için en az 10 birim gerekiyor.');
+          return;
+        }
+        
+        // Sunucuya politika haberi isteği gönder
+        const message = {
+          type: 'mediaAction',
+          gameId: currentGameId,
+          playerId: playerId,
+          data: {
+            actionType: 'policyNews',
+            content: 'Politika haberi',
+            budget: 10,
+            matrixPosition: {
+              x: parseInt(selectedMatrix.dataset.x),
+              y: parseInt(selectedMatrix.dataset.y)
+            }
+          }
+        };
+        
+        logMessage(`Politika haberi isteği gönderiliyor: ${JSON.stringify(message)}`, "sent");
+        ws.send(JSON.stringify(message));
+        
+        // UI'ı sıfırla
+        document.getElementById('policy-news-options').style.display = 'none';
+        document.querySelectorAll('.matrix-option').forEach(btn => btn.classList.remove('selected'));
+      });
+      
+      // Polemik haberi onaylama
+      document.getElementById('confirm-polemic-news').addEventListener('click', () => {
+        const opponentId = document.getElementById('opponent-select').value;
+        const accusationType = document.getElementById('accusation-type').value;
+        const selectedMatrix = document.querySelector('#matrix-movement-options .matrix-option.selected');
+        
+        if (!opponentId) {
+          alert('Lütfen bir rakip seçin!');
+          return;
+        }
+        
+        if (!accusationType) {
+          alert('Lütfen bir itham türü seçin!');
+          return;
+        }
+        
+        if (!selectedMatrix) {
+          alert('Lütfen bir matris pozisyonu seçin!');
+          return;
+        }
+        
+        // Bütçe kontrolü
+        const currentBudget = parseInt(document.getElementById('election-budget-news').textContent) || 0;
+        if (currentBudget < 10) {
+          alert('Yeterli seçim bütçeniz yok! Haber yaptırmak için en az 10 birim gerekiyor.');
+          return;
+        }
+        
+        // Sunucuya polemik haberi isteği gönder
+        const message = {
+          type: 'mediaAction',
+          gameId: currentGameId,
+          playerId: playerId,
+          data: {
+            actionType: 'polemicNews',
+            targetId: opponentId,
+            content: accusationType,
+            budget: 10,
+            matrixPosition: {
+              x: parseInt(selectedMatrix.dataset.x),
+              y: parseInt(selectedMatrix.dataset.y)
+            }
+          }
+        };
+        
+        logMessage(`Polemik haberi isteği gönderiliyor: ${JSON.stringify(message)}`, "sent");
+        ws.send(JSON.stringify(message));
+        
+        // UI'ı sıfırla
+        document.getElementById('polemic-news-options').style.display = 'none';
+        document.getElementById('accusation-options').style.display = 'none';
+        document.getElementById('matrix-movement-options').style.display = 'none';
+        document.getElementById('opponent-select').value = '';
+        document.getElementById('accusation-type').value = '';
+        document.querySelectorAll('.matrix-option').forEach(btn => btn.classList.remove('selected'));
+      });
+      
+      // Matris seçenekleri için olay dinleyicisi
+      document.querySelectorAll('.matrix-option').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          // Aynı gruptaki diğer butonların seçimini kaldır
+          const parent = e.target.closest('.matrix-options');
+          parent.querySelectorAll('.matrix-option').forEach(b => b.classList.remove('selected'));
+          
+          // Bu butonu seç
+          e.target.classList.add('selected');
+        });
+      });
+    });
     
     // Yeni oyun oluştur
     function createGame() {
@@ -629,21 +978,55 @@
     
     // Miting düzenle
     function organizeRally() {
-      if (!gameState.selectedCards.length) {
-        logMessage("En az bir politika kartı seçmelisiniz", "error");
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        alert('Sunucu bağlantısı yok!');
         return;
       }
       
+      // Seçili promosyon kartlarını al
+      const selectedPromotionCards = Array.from(promotionCardsContainer.querySelectorAll('.card.selected')).map(card => card.dataset.id);
+      
+      // Seçili politika kartlarını al
+      const selectedPolicyCards = Array.from(policyCardsContainerRally.querySelectorAll('.card.selected')).map(card => card.dataset.id);
+      
+      // Toplam promosyon maliyetini hesapla
+      let totalPromotionCost = 0;
+      selectedPromotionCards.forEach(cardId => {
+        const cardElement = promotionCardsContainer.querySelector(`.card[data-id="${cardId}"]`);
+        if (cardElement) {
+          totalPromotionCost += parseInt(cardElement.dataset.cost) || 0;
+        }
+      });
+      
+      // Bütçe kontrolü
+      const currentBudget = parseInt(document.getElementById('election-budget').textContent) || 100;
+      if (totalPromotionCost > currentBudget) {
+        alert('Yeterli seçim bütçeniz yok!');
+        return;
+      }
+      
+      // En az bir politika kartı seçilmiş olmalı
+      if (selectedPolicyCards.length === 0) {
+        alert('En az bir politika kartı seçmelisiniz!');
+        return;
+      }
+      
+      // Sunucuya miting düzenleme isteği gönder
       const message = {
         type: 'organizeRally',
         gameId: currentGameId,
         playerId: playerId,
         data: {
-          policyCardIds: gameState.selectedCards
+          policyCardIds: selectedPolicyCards,
+          promotionCardIds: selectedPromotionCards
         }
       };
       
-      sendToServer(message);
+      logMessage(`Miting düzenleme isteği gönderiliyor: ${JSON.stringify(message)}`, "sent");
+      ws.send(JSON.stringify(message));
+      
+      // UI'ı güncelle
+      organizeRallyBtn.disabled = true;
     }
     
     // Oyuncu hazır
@@ -819,6 +1202,119 @@
       });
     }
     
+    // Politika kartlarını görüntüle (politika konuşması için)
+    function displayPolicyCardsForSpeech(cards) {
+      policyCardsContainerElement.innerHTML = '';
+      gameState.selectedCards = [];
+      
+      cards.forEach(card => {
+        const cardElement = document.createElement('div');
+        cardElement.className = 'card';
+        cardElement.dataset.id = card.id;
+        cardElement.innerHTML = `
+          <h4>${card.title}</h4>
+          <p>${card.description}</p>
+        `;
+        
+        cardElement.addEventListener('click', () => {
+          // Kartın seçim durumunu değiştir
+          cardElement.classList.toggle('selected');
+          
+          // Seçili kartları güncelle
+          if (cardElement.classList.contains('selected')) {
+            gameState.selectedCards.push(card.id);
+          } else {
+            const index = gameState.selectedCards.indexOf(card.id);
+            if (index !== -1) {
+              gameState.selectedCards.splice(index, 1);
+            }
+          }
+        });
+        
+        policyCardsContainerElement.appendChild(cardElement);
+      });
+    }
+    
+    // Promosyon kartlarını görüntüle
+    function displayPromotionCards(cards) {
+      promotionCardsContainer.innerHTML = '';
+      
+      cards.forEach(card => {
+        // Kart maliyetini belirle
+        let cardCost = card.cost || 10; // Varsayılan maliyet
+        
+        // Kart türüne göre maliyet belirle (backend ile uyumlu)
+        if (card.type && !card.cost) {
+          switch (card.type) {
+            case 'conservative':
+              cardCost = 15; // Muhafazakar item dağıtma maliyeti
+              break;
+            case 'liberal':
+              cardCost = 15; // Liberal item dağıtma maliyeti
+              break;
+            case 'leftist':
+              cardCost = 15; // Solcu item dağıtma maliyeti
+              break;
+            case 'food': // Tavuk döner gibi yiyecek dağıtımı
+              cardCost = 10; // Yemek dağıtma maliyeti
+              break;
+            case 'concert':
+              cardCost = 20; // Konser düzenleme maliyeti (en pahalı)
+              break;
+            case 'basic':
+              cardCost = 5; // Temel promosyon (en ucuz)
+              break;
+            default:
+              cardCost = 10; // Varsayılan maliyet
+          }
+        }
+        
+        const cardElement = document.createElement('div');
+        cardElement.className = 'card';
+        cardElement.dataset.id = card.id;
+        cardElement.dataset.cost = cardCost;
+        cardElement.innerHTML = `
+          <h4>${card.title}</h4>
+          <p>${card.description}</p>
+          <p class="card-cost">Maliyet: ${cardCost} birim</p>
+        `;
+        
+        cardElement.addEventListener('click', () => {
+          // Kartın seçim durumunu değiştir
+          cardElement.classList.toggle('selected');
+          
+          // Seçili kartların toplam maliyetini güncelle
+          updateTotalPromotionCost();
+        });
+        
+        promotionCardsContainer.appendChild(cardElement);
+      });
+    }
+    
+    // Seçili promosyon kartlarının toplam maliyetini güncelle
+    function updateTotalPromotionCost() {
+      const selectedCards = promotionCardsContainer.querySelectorAll('.card.selected');
+      let totalCost = 0;
+      
+      selectedCards.forEach(card => {
+        totalCost += parseInt(card.dataset.cost) || 0;
+      });
+      
+      // Toplam maliyeti göster
+      const costInfoElement = document.getElementById('promotion-cost-info');
+      if (costInfoElement) {
+        costInfoElement.textContent = `Seçili promosyon kartlarının toplam maliyeti: ${totalCost} birim`;
+        
+        // Bütçe yeterliyse yeşil, değilse kırmızı göster
+        const currentBudget = parseInt(document.getElementById('election-budget').textContent) || 100;
+        if (totalCost > currentBudget) {
+          costInfoElement.style.color = 'red';
+        } else {
+          costInfoElement.style.color = 'green';
+        }
+      }
+    }
+    
     // Sohbet mesajını görüntüle
     function displayChatMessage(message) {
       const chatLogItem = document.createElement('div');
@@ -839,43 +1335,6 @@
       });
       
       gameStatus.textContent = playersInfo;
-    }
-    
-    // Aşamaya göre UI'ı güncelle
-    function updateUIForPhase(phase) {
-      // Tüm aksiyon panellerini gizle
-      citySelection.style.display = 'none';
-      rallyOrganization.style.display = 'none';
-      electionBus.style.display = 'none';
-      mediaInteraction.style.display = 'none';
-      playerReadyBtn.style.display = 'none';
-      
-      // Geçerli aşamaya göre paneli göster
-      switch (phase) {
-        case 'citySelection':
-          citySelection.style.display = 'block';
-          displayCityCards(gameState.cards.city || []);
-          break;
-          
-        case 'rallyOrganization':
-          rallyOrganization.style.display = 'block';
-          displayPolicyCards(gameState.cards.policy || []);
-          break;
-          
-        case 'electionBus':
-          electionBus.style.display = 'block';
-          break;
-          
-        case 'mediaInteraction':
-          mediaInteraction.style.display = 'block';
-          break;
-          
-        case 'polling':
-          // Anket sonuçları için özel bir panel yok, sadece hazır butonunu göster
-          playerReadyBtn.style.display = 'block';
-          playerReadyBtn.dataset.phase = 'polling';
-          break;
-      }
     }
   </script>
 </body>
